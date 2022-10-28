@@ -1,49 +1,73 @@
 #include <stdio.h>
 
-char *find_binary_name(char *argv[512]){
-    char *strr;
-    strr = argv[0];
-    char *s; 
-    s = "";
-
-    if (strr == NULL){
-        return strr;
-    }
-    for (int j = strlen(strr)-1; j >=0; j--){
-
-        if (strr[j] == '/'){
-            if (j == strlen(strr)-1){
-                return s;
-            }
-            return strstr(strr, &strr[j+1]);
-        }
-
-    }
-    return strr;
-}
-
-void parse(char buffer[1024], char *tokens[512], char *argv[512]) {
-    // TODO: write your code here
+void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
     char *str = buffer;
     char *token;
     int i = 0;
-    while ((token = strtok(str, " \t\n")) != NULL){
+
+
+    while ((token = strtok(str, " \t\n")) != NULL) {
         tokens[i] = token;
-        argv[i] = token;
         str = NULL;
-        i++;
+        i +=1;
     }
 
-    argv[0] = find_binary_name(argv);
+    if (tokens[0] == NULL) {
+        return;
+    }
+    
+    // deal with the file path
+    if (strrchr(tokens[0],'/') != NULL) {
+        argv[0] = strrchr(tokens[0],'/') + 1;
+    } else {
+        argv[0] = tokens[0];
+    }
 
-    argv[i] = NULL;
+    // put tokens into argv
+    for (int j=1; tokens[j] != NULL; j++) {
+        argv[j] = tokens[j];
+    }
+    
+    // deal with redirections
 
-    // You may create helper functions if you like
+    // if (argv[0] == ">"){
+    //     fprintf(stderr, "No command.")
+    // }
+
+    if (argv[sizeof(argv)-1] == ">") {
+        fprintf(stderr, "No redirection file specified.")
+    }
+
+    if (argv[sizeof(argv)-1] == "<")  {
+        fprintf(stderr, "No redirection file specified.")
+    }
+
+    if (argv[sizeof(argv)-1] == ">>")  {
+        fprintf(stderr, "No redirection file specified.")
+    }
+
+    for (int i=0; i<sizeof(argv)-1; i++) {
+        if (argv[i] == ">" || argv[i] == "<" || argv[i] == ">>") {
+            strncat(redirect, argv + i, 2)
+            memmove(argv + i, argv + i + 2, strlen(argv) - i)
+        }
+    }
+
+    if (sizeof(redirect) > 2) {
+        fprintf(stderr, "Can't have two redirects on one line.")
+    }
 }
 
 int main() {
     /* TODO: everything! */
-    printf("helloworld");
+    while(1){
+        input = readUserInput(stdin);
+        if (input != EOF){
+            parse(input);
+        }else{
+            exit(0);
+        }
+    }
 
     return 0;
 }

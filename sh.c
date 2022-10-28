@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <string.h>
+#include <stddef.h>
 
 void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
     char *str = buffer;
@@ -34,40 +36,54 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     //     fprintf(stderr, "No command.")
     // }
 
-    if (argv[sizeof(argv)-1] == ">") {
-        fprintf(stderr, "No redirection file specified.")
+    if (strcmp(argv[sizeof(*argv)-1], ">") == 0) {
+        fprintf(stderr, "No redirection file specified.");
     }
 
-    if (argv[sizeof(argv)-1] == "<")  {
-        fprintf(stderr, "No redirection file specified.")
+    if (strcmp(argv[sizeof(*argv)-1], "<") == 0)  {
+        fprintf(stderr, "No redirection file specified.");
     }
 
-    if (argv[sizeof(argv)-1] == ">>")  {
-        fprintf(stderr, "No redirection file specified.")
+    if (strcmp(argv[sizeof(*argv)-1], ">>") == 0)  {
+        fprintf(stderr, "No redirection file specified.");
     }
 
-    for (int i=0; i<sizeof(argv)-1; i++) {
-        if (argv[i] == ">" || argv[i] == "<" || argv[i] == ">>") {
-            strncat(redirect, argv + i, 2)
-            memmove(argv + i, argv + i + 2, strlen(argv) - i)
+    for (unsigned int i=0; i < sizeof(*argv)-1; i++) {
+        printf(*redirect);
+        printf(argv[i]);
+        if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], ">>") == 0) {
+            strncat(*redirect, argv[i], 2);
+            // memmove(argv[0] + i, argv[0] + i + 2, strlen(*argv) - i);
         }
     }
 
-    if (sizeof(redirect) > 2) {
-        fprintf(stderr, "Can't have two redirects on one line.")
+    if (sizeof(*redirect) > 2) {
+        fprintf(stderr, "Can't have two redirects on one line.");
     }
 }
 
 int main() {
     /* TODO: everything! */
-    while(1){
-        input = readUserInput(stdin);
-        if (input != EOF){
-            parse(input);
-        }else{
-            exit(0);
-        }
-    }
 
+
+    // while(1){
+    //     input = readUserInput(stdin);
+    //     if (input != EOF){
+    //         parse(input);
+    //     }else{
+    //         exit(0);
+    //     }
+    // }
+
+    char str[1024] = "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end";
+
+    char *tokens[512 * sizeof(char *)];
+
+    char *argv[512 * sizeof(char *)];
+
+    char *redirect[512 * sizeof(char *)];
+    memset(redirect, 0, 512 * sizeof(char *));
+    parse(str, tokens, argv, redirect);
+    printf(*argv, redirect);
     return 0;
 }

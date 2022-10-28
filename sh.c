@@ -49,11 +49,9 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     }
 
     for (unsigned int i=0; i < sizeof(*argv)-1; i++) {
-        printf(*redirect);
-        printf(argv[i]);
         if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], ">>") == 0) {
-            strncat(*redirect, argv[i], 2);
-            // memmove(argv[0] + i, argv[0] + i + 2, strlen(*argv) - i);
+            // strncat(*redirect, argv[i], 2);
+            memmove(argv[i], argv[i+2], strlen(*argv)-2);
         }
     }
 
@@ -75,15 +73,23 @@ int main() {
     //     }
     // }
 
-    char str[1024] = "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end";
+    // char str[1024] = "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end";
+    
+    char buffer[1024];
+    memset(buffer, 0, 1024);
 
-    char *tokens[512 * sizeof(char *)];
+    char *tokens[512];
+    memset(tokens, 0, 512 * sizeof(char *));
 
-    char *argv[512 * sizeof(char *)];
+    char *argv[512];
+    memset(argv, 0, 512 * sizeof(char *));
 
-    char *redirect[512 * sizeof(char *)];
+    char *redirect[512];
     memset(redirect, 0, 512 * sizeof(char *));
-    parse(str, tokens, argv, redirect);
+    
+    strncpy(buffer, "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end", 1024);
+
+    parse(buffer, tokens, argv, redirect);
     printf(*argv, redirect);
     return 0;
 }

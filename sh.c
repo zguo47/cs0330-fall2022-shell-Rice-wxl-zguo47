@@ -5,7 +5,9 @@
 void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
     char *str = buffer;
     char *token;
-    int i = 0;
+    unsigned int i = 0;
+
+    int size_re = 0;
 
 
     while ((token = strtok(str, " \t\n")) != NULL) {
@@ -36,26 +38,29 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     //     fprintf(stderr, "No command.")
     // }
 
-    if (strcmp(argv[sizeof(*argv)-1], ">") == 0) {
+    if (strcmp(argv[i-1], ">") == 0) {
         fprintf(stderr, "No redirection file specified.");
     }
 
-    if (strcmp(argv[sizeof(*argv)-1], "<") == 0)  {
+    if (strcmp(argv[i-1], "<") == 0)  {
         fprintf(stderr, "No redirection file specified.");
     }
 
-    if (strcmp(argv[sizeof(*argv)-1], ">>") == 0)  {
+    if (strcmp(argv[i-1], ">>") == 0)  {
         fprintf(stderr, "No redirection file specified.");
     }
 
-    for (unsigned int i=0; i < sizeof(*argv)-1; i++) {
-        if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], ">>") == 0) {
-            // strncat(*redirect, argv[i], 2);
-            memmove(argv[i], argv[i+2], strlen(*argv)-2);
+    for (unsigned int k=0; k < i-1; k++) {
+        if (strcmp(argv[k], ">") == 0 || strcmp(argv[k], "<") == 0 || strcmp(argv[k], ">>") == 0) {
+            redirect[size_re] = argv[k];
+            redirect[size_re + 1] = argv[k+1];
+            size_re += 2;
+            unsigned int size_n = i-k-2;
+            memmove(argv + k, argv + k + 2, size_n*8);
         }
     }
 
-    if (sizeof(*redirect) > 2) {
+    if ((size_re > 2)) {
         fprintf(stderr, "Can't have two redirects on one line.");
     }
 }
@@ -90,6 +95,8 @@ int main() {
     strncpy(buffer, "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end", 1024);
 
     parse(buffer, tokens, argv, redirect);
-    printf(*argv, redirect);
+    // for (unsigned int j = 0; j < sizeof(argv)/sizeof(char *); j++){
+    //     printf("%s", argv[j]);
+    // }
     return 0;
 }

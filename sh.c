@@ -6,10 +6,10 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     char *str = buffer;
     char *token;
     unsigned int i = 0;
+    unsigned int size_re = 0;
 
-    int size_re = 0;
 
-
+    // tokenize
     while ((token = strtok(str, " \t\n")) != NULL) {
         tokens[i] = token;
         str = NULL;
@@ -20,17 +20,15 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
         return;
     }
     
-    // deal with the file path
-    if (strrchr(tokens[0],'/') != NULL) {
-        argv[0] = strrchr(tokens[0],'/') + 1;
-    } else {
-        argv[0] = tokens[0];
+    // put tokens into argv while dealing with the file path
+    for (int j=0; tokens[j] != NULL; j++) {
+        if (strrchr(tokens[j],'/') != NULL) {
+            argv[j] = strrchr(tokens[j],'/') + 1;
+        } else {
+            argv[j] = tokens[j];
+        }
     }
 
-    // put tokens into argv
-    for (int j=1; tokens[j] != NULL; j++) {
-        argv[j] = tokens[j];
-    }
     
     // deal with redirections
 
@@ -39,15 +37,15 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     // }
 
     if (strcmp(argv[i-1], ">") == 0) {
-        fprintf(stderr, "No redirection file specified.");
+        fprintf(stderr, "error: no redirection file specified.");
     }
 
     if (strcmp(argv[i-1], "<") == 0)  {
-        fprintf(stderr, "No redirection file specified.");
+        fprintf(stderr, "error: no redirection file specified.");
     }
 
     if (strcmp(argv[i-1], ">>") == 0)  {
-        fprintf(stderr, "No redirection file specified.");
+        fprintf(stderr, "error: no redirection file specified.");
     }
 
     for (unsigned int k=0; k < i-1; k++) {
@@ -55,15 +53,23 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
             redirect[size_re] = argv[k];
             redirect[size_re + 1] = argv[k+1];
             size_re += 2;
-            unsigned int size_n = i-k-2;
-            memmove(argv + k, argv + k + 2, size_n*8);
+            memmove(argv + k, argv + k + 2, 8*(i-k-2));
+            argv[i-2] = NULL;
+            argv[i-1] = NULL;
+            i -= 2;
+            k -= 1;
+            if (i == 0){
+                fprintf(stderr, "error: no Command.");
+                return;
+            }
         }
     }
 
     if ((size_re > 2)) {
-        fprintf(stderr, "Can't have two redirects on one line.");
+        fprintf(stderr, "error: can't have two redirects on one line.");
     }
-}
+    
+}   
 
 int main() {
     /* TODO: everything! */
@@ -92,11 +98,46 @@ int main() {
     char *redirect[512];
     memset(redirect, 0, 512 * sizeof(char *));
     
-    strncpy(buffer, "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end", 1024);
+    strncpy(buffer, "> end", 1024);
 
     parse(buffer, tokens, argv, redirect);
-    // for (unsigned int j = 0; j < sizeof(argv)/sizeof(char *); j++){
-    //     printf("%s", argv[j]);
-    // }
+
+
+
+    if (argv[0] == "cd"){
+        if (argv[1] == NULL) {
+            fprintf(stderr, "cd: syntax error");
+        }
+        else {
+            if (chdir(argv[1]) == -1) {
+                fprintf(stderr, "cd: no such file or directory")''
+            }
+        }
+    }
+
+    else if (argv[0] == "ln") {
+        if (argv[1] == NULL) {
+            fprintf(stderr, "ln: syntax error");
+        }
+        else {
+            
+        }
+    }
+    else if (argv[0] == "rm") {
+        if (argv[1] == NULL) {
+            fprintf(stderr, "ln: syntax error");
+        }
+        else {
+            
+        }
+    }    
+    else if (argv[0] == "exit") {
+
+    }
+    else {
+
+    }
+
+
     return 0;
 }

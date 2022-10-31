@@ -27,6 +27,7 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     for (int j=0; tokens[j] != NULL; j++) {
         argv[j] = tokens[j];
     }
+    argv[i] = NULL;
 
     
     // deal with redirections
@@ -109,6 +110,8 @@ int main() {
 
         char *redirect[512];
         memset(redirect, 0, 512 * sizeof(char *));
+
+        char buf[1024];
     
         // strncpy(buffer, "> end", 1024);
 
@@ -139,9 +142,12 @@ int main() {
                     fprintf(stderr, "cd: syntax error \n");
                 }
                 else {
-                    if (chdir(argv[1]) == -1) {
+                    int cd = chdir(strcat(strcat(getcwd(buf, sizeof(buf)), "/"), argv[1]));
+                    if (cd == -1) {
                         perror("cd");
                         exit(1);
+                    }else{
+                        continue;
                     }
                 }
             }

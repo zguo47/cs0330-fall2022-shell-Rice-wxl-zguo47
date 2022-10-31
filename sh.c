@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
+#include <unistd.h>
 
 void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
     char *str = buffer;
@@ -20,13 +21,9 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
         return;
     }
     
-    // put tokens into argv while dealing with the file path
+    // put tokens into argv
     for (int j=0; tokens[j] != NULL; j++) {
-        if (strrchr(tokens[j],'/') != NULL) {
-            argv[j] = strrchr(tokens[j],'/') + 1;
-        } else {
-            argv[j] = tokens[j];
-        }
+        argv[j] = tokens[j];
     }
 
     
@@ -69,7 +66,7 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
         fprintf(stderr, "error: can't have two redirects on one line.");
     }
     
-}   
+}
 
 int main() {
     /* TODO: everything! */
@@ -85,6 +82,18 @@ int main() {
     // }
 
     // char str[1024] = "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end";
+    ssize_t bytesRead;
+
+    #ifdef PROMPT 
+    if (printf("33sh> ") < 0) { 
+        fprintf(stderr, "error when printing prompt.\n")
+    }
+    if (fflush(stdout) < 0) {
+        fprintf(stderr, "error when using fflush.\n")
+    } 
+    #endif
+
+
     
     char buffer[1024];
     memset(buffer, 0, 1024);
@@ -98,46 +107,80 @@ int main() {
     char *redirect[512];
     memset(redirect, 0, 512 * sizeof(char *));
     
-    strncpy(buffer, "> end", 1024);
+    // strncpy(buffer, "> end", 1024);
 
-    parse(buffer, tokens, argv, redirect);
-
-
-
-    if (argv[0] == "cd"){
-        if (argv[1] == NULL) {
-            fprintf(stderr, "cd: syntax error");
+    if ((bytesRead = read(0, buffer, 1024)) == -1) {
+        perror("user input");
+        continue; 
+    }else if (((bytesRead  == 0)){
+        exit(1);/* terminate shell */
+    }else{
+        parse(buffer, tokens, argv, redirect);
+        // Handle the case with no input
+        if (argv[0] == NULL) {
+            continue;
         }
-        else {
-            if (chdir(argv[1]) == -1) {
-                fprintf(stderr, "cd: no such file or directory")''
+    }
+
+     // command exit
+    if (argv[0] == "exit") {
+        exit(0)
+    }
+
+    // Child Process
+    if (fork() == 0) {
+        char *argv[] = {"file path", argv, redirect, NULL};
+            // command cd
+        if (argv[0] == "cd"){
+            if (argv[1] == NULL) {
+                fprintf(stderr, "cd: syntax error");
+            }
+            else {
+                if (chdir(argv[1]) == -1) {
+                    perror("cd");
+                }
             }
         }
-    }
 
-    else if (argv[0] == "ln") {
-        if (argv[1] == NULL) {
-            fprintf(stderr, "ln: syntax error");
+        // command ln
+        else if (argv[0] == "ln") {
+            if (argv[1] == NULL || argv[2] == NULL) {
+                fprintf(stderr, "ln: syntax error");
+            }
+            else {
+                if (link(argv[1],argv[2]) == -1) {
+                    perror("ln");
+                
+                }
+            }
         }
-        else {
+
+        // command rm
+        else if (argv[0] == "rm") {
+            if (argv[1] == NULL) {
+                fprintf(stderr, "rm: syntax error");
+            }
+            else {
+                if (unlink(argv[1] == -1)) {
+                    perror("rm");               
+                }
             
-        }
-    }
-    else if (argv[0] == "rm") {
-        if (argv[1] == NULL) {
-            fprintf(stderr, "ln: syntax error");
-        }
+            }
+        }    
         else {
-            
+        char *full_name = argv[0];
+        if (strrchr(argv[0],'/') != NULL) {
+            argv[0] = strrchr(argv[0],'/') + 1;
         }
-    }    
-    else if (argv[0] == "exit") {
-
-    }
-    else {
-
+            execv(full_name, argv);
+            perror("execv");
+        }
+        exit(1);
     }
 
+
+    // Parent Process continues
+    wait(0);
 
     return 0;
 }

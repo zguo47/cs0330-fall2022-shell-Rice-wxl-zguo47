@@ -27,8 +27,6 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     for (int j=0; tokens[j] != NULL; j++) {
         argv[j] = tokens[j];
     }
-    argv[i] = NULL;
-
     
     // deal with redirections
 
@@ -135,6 +133,46 @@ int main() {
 
         // Child Process
         if (fork() == 0) {
+
+            if (redirect[0] != NULL){
+                if (strcmp(redirect[0], "<") == 0){
+                    int fd_0 = open(argv[1], O_RDONLY);
+                    if (fd_0 == -1){
+                    perror("open");
+                    exit(1);
+                    }
+                    dup2(fd_0, fileno(stdin));
+                    if (close(fd_0) == -1){
+                        perror("close");
+                        exit(1);
+                    }
+                }
+                else if (strcmp(redirect[0], ">") == 0){
+                    int fd_1 = open(argv[1], O_RDWR | O_CREAT);
+                    if (fd_1 == -1){
+                    perror("open");
+                    exit(1);
+                    }
+                    dup2(fd_1, fileno(stdout));
+                    if (close(fd_1) == -1){
+                        perror("close");
+                        exit(1);
+                    }
+                }
+                else {
+                    int fd_2 = open(argv[1], O_RDWR | O_CREAT | O_APPEND);
+                    if (fd_2 == -1){
+                    perror("open");
+                    exit(1);
+                    }
+                    dup2(fd_2, fileno(stdout));
+                    if (close(fd_2) == -1){
+                        perror("close");
+                        exit(1);
+                    }
+                }
+
+            }
         
             // command cd
             if (strcmp(argv[0], "cd") == 0){

@@ -146,7 +146,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_0 = open(strcat(strcat(getcwd(buf, sizeof(buf)), "/"), argv[1]), O_RDONLY);
+                    int fd_0 = open(redirect[1], O_RDONLY);
                     if (fd_0 == -1){
                     perror("open");
                     exit(1);
@@ -159,7 +159,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_1 = open(strcat(strcat(getcwd(buf, sizeof(buf)), "/"), argv[1]), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                    int fd_1 = open(redirect[1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                     if (fd_1 == -1){
                     perror("open");
                     exit(1);
@@ -171,7 +171,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_2 = open(strcat(strcat(getcwd(buf, sizeof(buf)), "/"), argv[1]), O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, 0666);
+                    int fd_2 = open(redirect[1], O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, 0666);
                     if (fd_2 == -1){
                     perror("open");
                     exit(1);

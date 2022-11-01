@@ -31,6 +31,10 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
 
     // deal with redirections
 
+    // if (argv[0] == ">"){
+    //     fprintf(stderr, "No command.")
+    // }
+
     if (strcmp(argv[i - 1], ">") == 0) {
         fprintf(stderr, "error: no redirection file specified.\n");
         return 1;
@@ -64,10 +68,24 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
         }
     }
 
-    if ((size_re > 2)) {
-        fprintf(stderr, "error: can't have two redirects on one line.\n");
+    int input_num = 0;
+    int output_num = 0;
+    for (unsigned int m = 0; m < size_re; m += 2) {
+        if (strcmp(redirect[m], "<") == 0) {
+            input_num += 1;
+        } else {
+            output_num += 1;
+        }
+    }
+
+    if (input_num >= 2) {
+        fprintf(stderr, "syntax error: multiple input files.\n");
+        return 1;
+    } else if (output_num >= 2) {
+        fprintf(stderr, "syntax error: multiple output files.\n");
         return 1;
     }
+
     return 0;
 }
 
@@ -132,43 +150,44 @@ int main() {
         // Child Process
         if (fork() == 0) {
             /* redirect */
-            if (redirect[0] != NULL) {
-                if (strcmp(redirect[0], "<") == 0) {
-                    if (close(0) == -1) {
-                        perror("close");
-                        exit(1);
+            for (int i = 0; i < 4; i += 2) {
+                if (redirect[i] != NULL) {
+                    if (strcmp(redirect[i], "<") == 0) {
+                        if (close(0) == -1) {
+                            perror("close");
+                            exit(1);
+                        }
+                        int fd_0 = open(redirect[i + 1], O_RDONLY);
+                        if (fd_0 == -1) {
+                            perror("open");
+                            exit(1);
+                        }
+                        dup2(fd_0, STDIN_FILENO);
+                    } else if (strcmp(redirect[i], ">") == 0) {
+                        if (close(1) == -1) {
+                            perror("close");
+                            exit(1);
+                        }
+                        int fd_1 = open(redirect[i + 1],
+                                        O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                        if (fd_1 == -1) {
+                            perror("open");
+                            exit(1);
+                        }
+                        dup2(fd_1, STDOUT_FILENO);
+                    } else {
+                        if (close(1) == -1) {
+                            perror("close");
+                            exit(1);
+                        }
+                        int fd_2 = open(redirect[i + 1],
+                                        O_WRONLY | O_CREAT | O_APPEND, 0666);
+                        if (fd_2 == -1) {
+                            perror("open");
+                            exit(1);
+                        }
+                        dup2(fd_2, STDOUT_FILENO);
                     }
-                    int fd_0 = open(redirect[1], O_RDONLY);
-                    if (fd_0 == -1) {
-                        perror("open");
-                        exit(1);
-                    }
-                    dup2(fd_0, STDIN_FILENO);
-
-                } else if (strcmp(redirect[0], ">") == 0) {
-                    if (close(1) == -1) {
-                        perror("close");
-                        exit(1);
-                    }
-                    int fd_1 =
-                        open(redirect[1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                    if (fd_1 == -1) {
-                        perror("open");
-                        exit(1);
-                    }
-                    dup2(fd_1, STDOUT_FILENO);
-                } else {
-                    if (close(1) == -1) {
-                        perror("close");
-                        exit(1);
-                    }
-                    int fd_2 =
-                        open(redirect[1], O_WRONLY | O_CREAT | O_APPEND, 0666);
-                    if (fd_2 == -1) {
-                        perror("open");
-                        exit(1);
-                    }
-                    dup2(fd_2, STDOUT_FILENO);
                 }
             }
 

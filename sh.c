@@ -79,10 +79,10 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
     }
 
     if (input_num >= 2) {
-        fprintf(stderr, "syntax error: multiple input files.\n");
+        fprintf(stderr, "syntax error: multiple input files\n");
         return 1;
     } else if (output_num >= 2) {
-        fprintf(stderr, "syntax error: multiple output files.\n");
+        fprintf(stderr, "syntax error: multiple output files\n");
         return 1;
     }
 

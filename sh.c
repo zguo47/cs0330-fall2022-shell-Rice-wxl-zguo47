@@ -171,7 +171,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_2 = open(redirect[1], O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, 0666);
+                    int fd_2 = open(redirect[1], O_WRONLY | O_CREAT | O_APPEND, 0666);
                     if (fd_2 == -1){
                     perror("open");
                     exit(1);

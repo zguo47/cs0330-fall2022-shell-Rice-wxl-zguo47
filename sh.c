@@ -111,6 +111,7 @@ int main() {
         memset(redirect, 0, 512 * sizeof(char *));
 
         char buf[1024];
+        memset(buf, 0, 1024);
     
         // strncpy(buffer, "> end", 1024);
 
@@ -134,43 +135,44 @@ int main() {
 
         // Child Process
         if (fork() == 0) {
-
+            /* redirect */
             if (redirect[0] != NULL){
                 if (strcmp(redirect[0], "<") == 0){
+                    if (close(0) == -1){
+                        perror("close");
+                        exit(1);
+                    }
                     int fd_0 = open(argv[1], O_RDONLY);
                     if (fd_0 == -1){
                     perror("open");
                     exit(1);
                     }
-                    dup2(fd_0, fileno(stdin));
-                    if (close(fd_0) == -1){
+                    dup2(fd_0, STDIN_FILENO);
+
+                }
+                else if (strcmp(redirect[0], ">") == 0){
+                    if (close(1) == -1){
                         perror("close");
                         exit(1);
                     }
-                }
-                else if (strcmp(redirect[0], ">") == 0){
-                    int fd_1 = open(argv[1], O_RDWR | O_CREAT);
+                    int fd_1 = open(argv[1], O_RDWR | O_CREAT | O_TRUNC);
                     if (fd_1 == -1){
                     perror("open");
                     exit(1);
                     }
-                    dup2(fd_1, fileno(stdout));
-                    if (close(fd_1) == -1){
+                    dup2(fd_1, STDOUT_FILENO);
+                }
+                else {
+                    if (close(1) == -1){
                         perror("close");
                         exit(1);
                     }
-                }
-                else {
                     int fd_2 = open(argv[1], O_RDWR | O_CREAT | O_APPEND);
                     if (fd_2 == -1){
                     perror("open");
                     exit(1);
                     }
-                    dup2(fd_2, fileno(stdout));
-                    if (close(fd_2) == -1){
-                        perror("close");
-                        exit(1);
-                    }
+                    dup2(fd_2, STDOUT_FILENO);
                 }
 
             }

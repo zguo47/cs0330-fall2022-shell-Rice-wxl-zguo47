@@ -29,24 +29,18 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
         argv[j] = tokens[j];
     }
 
-    // deal with redirections
-
-    // if (argv[0] == ">"){
-    //     fprintf(stderr, "No command.")
-    // }
-
     if (strcmp(argv[i - 1], ">") == 0) {
-        fprintf(stderr, "error: no redirection file specified.\n");
+        fprintf(stderr, "syntax error: no output file\n");
         return 1;
     }
 
     if (strcmp(argv[i - 1], "<") == 0) {
-        fprintf(stderr, "error: no redirection file specified.\n");
+        fprintf(stderr, "syntax error: no input file\n");
         return 1;
     }
 
     if (strcmp(argv[i - 1], ">>") == 0) {
-        fprintf(stderr, "error: no redirection file specified.\n");
+        fprintf(stderr, "syntax error: no output file\n");
         return 1;
     }
 
@@ -62,7 +56,7 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
             i -= 2;
             k -= 1;
             if (i == 0) {
-                fprintf(stderr, "error: no Command.\n");
+                fprintf(stderr, "error: redirects with no command\n");
                 return 1;
             }
         }
@@ -91,17 +85,6 @@ int parse(char buffer[1024], char *tokens[512], char *argv[512],
 
 int main() {
     /* TODO: everything! */
-
-    // while(1){
-    //     input = readUserInput(stdin);
-    //     if (input != EOF){
-    //         parse(input);
-    //     }else{
-    //         exit(0);
-    //     }
-    // }
-
-    // char str[1024] = "/wiojaoif/aifjaw/get cd 123 to abc < txt.txt end";
     ssize_t bytesRead;
     while (1) {
 #ifdef PROMPT
@@ -127,8 +110,6 @@ int main() {
 
         char buf[1024];
         memset(buf, 0, 1024);
-
-        // strncpy(buffer, "> end", 1024);
 
         if ((bytesRead = read(0, buffer, 1024)) == -1) {
             perror("user input");
@@ -162,7 +143,7 @@ int main() {
                             perror("open");
                             exit(1);
                         }
-                        dup2(fd_0, STDIN_FILENO);
+                        // dup2(fd_0, STDIN_FILENO);
                     } else if (strcmp(redirect[i], ">") == 0) {
                         if (close(1) == -1) {
                             perror("close");
@@ -174,7 +155,7 @@ int main() {
                             perror("open");
                             exit(1);
                         }
-                        dup2(fd_1, STDOUT_FILENO);
+                        // dup2(fd_1, STDOUT_FILENO);
                     } else {
                         if (close(1) == -1) {
                             perror("close");
@@ -186,7 +167,7 @@ int main() {
                             perror("open");
                             exit(1);
                         }
-                        dup2(fd_2, STDOUT_FILENO);
+                        // dup2(fd_2, STDOUT_FILENO);
                     }
                 }
             }
@@ -200,7 +181,7 @@ int main() {
                         strcat(strcat(getcwd(buf, sizeof(buf)), "/"), argv[1]));
                     if (cd == -1) {
                         perror("cd");
-                        exit(1);
+                        exit(1);                   
                     } else {
                         continue;
                     }

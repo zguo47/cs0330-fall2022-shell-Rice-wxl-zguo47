@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 
-void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
+int parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect[512]) {
     char *str = buffer;
     char *token;
     unsigned int i = 0;
@@ -21,7 +21,7 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
     }
 
     if (tokens[0] == NULL) {
-        return;
+        return 1;
     }
     
     // put tokens into argv
@@ -37,14 +37,17 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
 
     if (strcmp(argv[i-1], ">") == 0) {
         fprintf(stderr, "error: no redirection file specified.\n");
+        return 1;
     }
 
     if (strcmp(argv[i-1], "<") == 0)  {
         fprintf(stderr, "error: no redirection file specified.\n");
+        return 1;
     }
 
     if (strcmp(argv[i-1], ">>") == 0)  {
         fprintf(stderr, "error: no redirection file specified.\n");
+        return 1;
     }
 
     for (unsigned int k=0; k < i-1; k++) {
@@ -59,14 +62,16 @@ void parse(char buffer[1024], char *tokens[512], char *argv[512], char *redirect
             k -= 1;
             if (i == 0){
                 fprintf(stderr, "error: no Command.\n");
-                return;
+                return 1;
             }
         }
     }
 
     if ((size_re > 2)) {
         fprintf(stderr, "error: can't have two redirects on one line.\n");
+        return 1;
     }
+    return 0;
     
 }
 
@@ -121,11 +126,10 @@ int main() {
         }else if (bytesRead  == 0){
             exit(1);/* terminate shell */
         }else{
-            parse(buffer, tokens, argv, redirect);
-            // Handle the case with no input
-            if (argv[0] == NULL) {
+            if (parse(buffer, tokens, argv, redirect) == 1){
                 continue;
             }
+            // Handle the case with no input
         }
 
         // command exit
@@ -155,7 +159,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_1 = open(argv[1], O_RDWR | O_CREAT | O_TRUNC);
+                    int fd_1 = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
                     if (fd_1 == -1){
                     perror("open");
                     exit(1);
@@ -167,7 +171,7 @@ int main() {
                         perror("close");
                         exit(1);
                     }
-                    int fd_2 = open(argv[1], O_RDWR | O_CREAT | O_APPEND);
+                    int fd_2 = open(argv[1], O_RDWR | O_CREAT | O_APPEND | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
                     if (fd_2 == -1){
                     perror("open");
                     exit(1);
